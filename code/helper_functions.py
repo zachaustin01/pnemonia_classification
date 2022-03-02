@@ -32,11 +32,6 @@ plt.style.use('seaborn-paper')
 plt.rcParams['figure.figsize'] = [10, 6] ## plot size
 plt.rcParams['axes.linewidth'] = 2.0 #set the value globally
 
-## notebook style and settings
-display(HTML("<style>.container { width:90% !important; }</style>"))
-display(HTML("<style>.output_png { display: table-cell; text-align: center; vertical-align: middle; } </style>"))
-display(HTML("<style>.MathJax {font-size: 100%;}</style>"))
-
 # For changing background color
 def set_background(color):
     script = ( "var cell = this.closest('.code_cell');" "var editor = cell.querySelector('.input_area');" "editor.style.background='{}';" "this.parentNode.removeChild(this)" ).format(color)
@@ -133,13 +128,13 @@ def calculateMetrics(predictions, predictionsProbabilities, actualLabels):
     
     return auc
     
-def getKagglePredictions(model, kaggleData, filename):
+def getKagglePredictions(model, kaggleData, filename, file_base):
     print("+ Writing kaggle test results in : results/%s..." % filename)
     predictions = model.predict(kaggleData)
     predictionProbs = [item[1] for item in predictions]
         
     # Store predictions for kaggle
-    outputFile = open("results/" + str(filename), "w")
+    outputFile = open(file_base + "results/" + str(filename), "w")
     outputFile.write("Id,Prediction\n")
     for i in range(0, len(predictionProbs)):
         outputFile.write(str(i + 1) + "," + str(predictionProbs[i]) + "\n")
@@ -173,3 +168,18 @@ def calculateClasswiseTopNAccuracy(actualLabels, predictionsProbs, TOP_N):
     accuracyHealthy = round((accuracyHealthy.count(True) * 100) / len(accuracyHealthy), 2)
     accuracyPneumonia = round((accuracyPneumonia.count(True) * 100) / len(accuracyPneumonia), 2)
     return accuracyHealthy, accuracyPneumonia
+
+def trainTestSplit(data, labels):
+    """
+    80-20 train-test data split
+    """
+    trainData, trainLabels, testData, testLabels = [], [], [], []
+    for i in range(0, len(data)):
+        if i % 5 == 0:
+            testData.append(data[i])
+            testLabels.append(labels[i])
+        else:
+            trainData.append(data[i])
+            trainLabels.append(labels[i])
+            
+    return np.array(trainData), np.array(testData), np.array(trainLabels), np.array(testLabels)
